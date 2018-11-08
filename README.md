@@ -55,6 +55,6 @@ _________________________________________ CODE STRUCTURE  ______________________
   
   The music played on the landing pad after return to base is handled by Wwise_Mms_XComStrategySoundManager . There is a short silence between Skyranger and landing pad as the audio engine resets. This is masked by rocket sounds from the Skyranger.
   
-*** Music Selection ***
- 
-  Each sound managing class reads two lists of music definitions from the configs. One is a set of tracks to play from the MMS packs, the other is a set of 
+*** Sound Playing Classes ***
+
+  When playing MMS tracks using the sound cue system, Wwise Mms 
