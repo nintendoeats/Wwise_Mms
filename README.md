@@ -1,4 +1,4 @@
-# Wwise_Mms
+# Wwise Mms
 A framework which enables Wwise-based interactive music for XCOM 2
 
 _________________________________________ INTRODUCTION  _____________________________________________
