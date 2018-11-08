@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Guid>fa9b04b1-c447-4ce3-b608-d6f7a7d0e648</Guid>
+    <Name>Wwise_Mms</Name>
+    <Description>Demonstrates how to override XCOM 2 base game classes individually - example provided by Long War Studios</Description>
+    <SteamPublishID>0</SteamPublishID>
+    <AssemblyName>ExampleClassOverride</AssemblyName>
+    <RootNamespace>ExampleClassOverride</RootNamespace>
+    <ProjectGuid>{3f350978-33e7-493a-993b-92c1b54bf591}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Config\XComCore.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComEditor.ini" />
+    <Content Include="Config\XComEngine.ini" />
+    <Content Include="Config\XComGame.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComShellSound.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComSkyrangerSound.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComStrategySound.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComTacticalSound.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Content\CIN_SkyrangerIntros.umap">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Localization\Wwise_Mms.int">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Localization\XComGame.int">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModPreview.jpg" />
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_AkEventPlayer.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_SeqAct_PlayDropshipSound.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_SkyrangerBuddy.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_Strategy_TrackPlayer.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_TacticalBuddy.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_TacticalInformationFinder.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_Tactical_ExplorePlayer.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_Tactical_CombatPlayer.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_TransitionData.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_StrategyBuddy.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_StrategyInformationFinder.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_UISL_UIDropShipBriefing_MissionStart.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_XComTacticalSoundManager.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_XComStrategySoundManager.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\Wwise_Mms_UISL_UIShell.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Wwise_Mms\Classes\X2DownloadableContentInfo_Wwise_Mms.uc">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Config\" />
+    <Folder Include="Content\" />
+    <Folder Include="Localization\" />
+    <Folder Include="Src\" />
+    <Folder Include="Src\Wwise_Mms" />
+    <Folder Include="Src\Wwise_Mms\Classes" />
+  </ItemGroup>
+  <Import Project="$(MSBuildLocalExtensionPath)\XCOM2.targets" />
+</Project>
