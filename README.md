@@ -25,7 +25,7 @@ _________________________________________ INTRODUCTION  ________________________
 
   While the unrealscript side of Wwise Mms is compatible with XCOM 2's War of the Chosen (WOTC), there is a Wwise-side problem which has thusfar prevented new soundbanks from being played in the expansion. This effectively makes Wwise Mms incompatible with WOTC for the time being.
 
-  Because of the way XCOM 2 loads in assets, it is nessecary to place either the sound bank files or hard links to them in one of the game's content folders. Simply subscribing to the mod in Steam Workshop is not enough. This can typically be achieved using a .bat file.
+  Because of the way XCOM 2 loads in assets, it is nessecary to place either the sound bank files or hard links to them in one of the game's content folders. This means that simply subscribing to the mod in Steam Workshop is not enough. Supplying the user with a .bat file which creates links is a way to make this as painless as possible for them.
   
   
  *** Instructions for Modders ***
