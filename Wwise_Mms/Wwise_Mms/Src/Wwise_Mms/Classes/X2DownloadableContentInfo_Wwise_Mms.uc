@@ -6,7 +6,7 @@
 
 class X2DownloadableContentInfo_Wwise_Mms extends X2DownloadableContentInfo;
 
-//-------------------------------------------------------------------------------------------------------OnPostTemplatesCreated
+//-------------------------------------------------------------------------------------------------------Event - OnPostTemplatesCreated
 // Firaxis: Called after the Templates have been created (but before they are validated) while 
 // this DLC / Mod is installed.
 //---------------------------------------------------------------------------------------------
