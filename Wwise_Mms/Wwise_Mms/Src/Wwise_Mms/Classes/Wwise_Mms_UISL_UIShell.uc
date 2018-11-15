@@ -8,14 +8,15 @@
 //	PURPOSE:	Removes fade-in and allows use of music which changes dynamically by menu
 //---------------------------------------------------------------------------------------
 
-//Alternate private variables are indicated by a "w" prefix.
-//Alternate functions and classes are indicated by a "WwiseMms_" Prefix
-//The list of Wwise Mms music definitions is called WiserMusicDefs to make the difference more obvious in configs
+//	Private variables which replace variables from MMS are indicated by a "w" prefix.
+//	Functions which replace functions from MMS are indicated by a "WwiseMms_" Prefix.
+
+//	The list of Wwise Mms music definitions is called WiserMusicDefs to distinguish them from MMS definitions in configs.
 
 class Wwise_Mms_UISL_UIShell extends MMS_UISL_UIShell config(ShellSound) config(WiseSound) dependson(Wwise_Mms_XComStrategySoundManager) dependson(Wwise_Mms_XComTacticalSoundManager) dependson(Wwise_Mms_AkEventPlayer);
 
 var config array<WwiseMms_ShellMusicDefinition> WiserShellCues;
-var array<name> FallbackIDs; //Replaces FallbackIDs for the sake of naming consistency for each manager. Builds patially from +FallbackCues in the config.
+var array<name> FallbackIDs; //Replaces MMS "FallbackCues" for the sake of naming consistency for each manager. Builds patially from +FallbackCues in configs.
 var array<WwiseMms_ShellMusicDefinition> CompleteWwiseMmsShellCuesList;
 var WwiseMms_ShellMusicDefinition DefToPlay;
 var string eventPlayerPath;
@@ -24,7 +25,11 @@ var string modifyingScreenPath;  //These weak references are required to avoid g
 var string soundManagerMessengerName;
 
 
-//----------------------------------------------------------------------------------------------------------------------------Event - OnInit(UIScreen)
+//-------------------------------------------------------------------------------------------------------Event - OnInit(UIScreen)
+//	Called when a new UIScreen is created.
+//	Executes the appropriate music behaviour if the new screen is the main menu, multiplayer menu, 
+//		or sub-menu of the main menu.
+//---------------------------------------------------------------------------------------------
 event OnInit(UIScreen Screen){
 
 	local XComShell ShellMenu;
@@ -34,25 +39,33 @@ event OnInit(UIScreen Screen){
 	WI = class'Helpers'.static.GetWorldInfo();
 	
 
-	//Shell Screen Finder
 	if (UIFinalShell(Screen) != none || UIMPShell_Base(Screen) != none){
+		//Find and stop the Main Menu AKEvent
 		ShellMenu = XComShell(WI.Game); 
-		ShellMenu.StopMenuMusic(); //Find and stop the Main Menu AKEvent
+		ShellMenu.StopMenuMusic(); 
 
-		CompleteWwiseMmsShellCuesList = WwiseMms_Shuffle(CompileFullShellMusicDefinitionList()); //	Build and shuffle list of Shell Cues
-
-		if (!class'MMS_UISL_MCM'.default.bAllowFallback){CompleteWwiseMmsShellCuesList.Sort(WwiseMms_SortDefs); }
-
+		//	Build and shuffle list of Shell Cues
+		CompleteWwiseMmsShellCuesList = WwiseMms_Shuffle(CompileFullShellMusicDefinitionList()); 
+		
+		//	If the user has not turned on the "allow fallback" setting, the list is sorted so that
+		//		the default music is moved to the bottom and will be played only if there is no other music.
+		if (!class'MMS_UISL_MCM'.default.bAllowFallback){
+			CompleteWwiseMmsShellCuesList.Sort(WwiseMms_SortDefs);
+		}
+		
+		//	Selects the definition on the top of the cue list. Since that list has been shuffled, 
+		//		this is a random selection.
 		DefToPlay = CompleteWwiseMmsShellCuesList[0];
 
-		if(defToPlay.Start_EventPath != ""){
-			ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Append $ DefToPlay.Start_EventPath);//"SoundMenuMusic.Play_Main_Menu_Music");//
+		//	If the selected definition has a Start_EventPath then it is treated as a Wwise Mms definition
+		//		and is send to an event player to be started.
+		if(DefToPlay.Start_EventPath != ""){
+			ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Append $ DefToPlay.Start_EventPath);						`log("Wwise Mms attempts to play" @ defToPlay.MusicID @ "at shell menu");
 
-			`log("Wwise Mms attempts to play" @ defToPlay.MusicID @ "at shell menu");
-
-
+		//	If the selected definition has a Start_EventPath then it is treated as a standard MMS definition
+		//		and is sent to a cue player to be started.	
 		}else{
-			cuePlayer = ShellMenu.Spawn(class'Wwise_Mms_Strategy_TrackPlayer', ShellMenu);		`log("Wwise Mms attempts to play" @ defToPlay.MusicID @ "at shell menu");
+			cuePlayer = ShellMenu.Spawn(class'Wwise_Mms_Strategy_TrackPlayer', ShellMenu);										`log("Wwise Mms attempts to play" @ defToPlay.MusicID @ "at shell menu");
 			cuePlayer.WwiseMms_Shell_InitStrategyPlayer(DefToPlay);
 			cuePlayer.Play();
 		}
@@ -60,21 +73,21 @@ event OnInit(UIScreen Screen){
 		return;
 	}
 
-	// Options menu finder
+	// Detects and execute events for main menu "options" screen.
 	if (DefToPlay.Options_EventPath != "" && UIOptionsPCSCreen(Screen) != none){  
 		modifyingScreenPath = PathName(Screen);  
 		ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Append $ DefToPlay.Options_EventPath);						`log("Attempting to play options menu event.");
 		return;
 	}
 
-	// New game menu finder
+	// Detects and execute events for "new game" screen.
 	if (DefToPlay.NewGame_EventPath != "" && UIShellDifficulty(Screen) != none){  
 		modifyingScreenPath = PathName(Screen);  
 		ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Append $ DefToPlay.NewGame_EventPath);						`log("Attempting to play new game menu event.");
 		return;
 	}
 
-	// Load game menu finder
+	// Detects and execute events for  main menu "load game" screen.
 	if (DefToPlay.LoadGame_EventPath != "" && UILoadGame(Screen) != none){  
 		modifyingScreenPath = PathName(Screen);  
 		ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Append $ DefToPlay.LoadGame_EventPath);						`log("Attempting to play load game menu event.");
@@ -82,8 +95,11 @@ event OnInit(UIScreen Screen){
 	}																					
 }
 
-//----------------------------------------------------------------------------------------------------------------------------Event - OnRemoved(UIScreen)
-event OnRemoved(UIScreen Screen){					//If this screen had modified our music, play the shell return event.
+//-------------------------------------------------------------------------------------------------------Event - OnRemoved(UIScreen)
+//	Called when a UIScreen is destroyed.
+//	Calls the definition's main menu event if that screen had triggered a modifying Wwise event.
+//---------------------------------------------------------------------------------------------
+event OnRemoved(UIScreen Screen){
 
 	if(PathName(Screen) == modifyingScreenPath && DefToPlay.Shell_EventPath != ""){
 		ObtainEventPlayer().PlayMusicStartEventFromPath(DefToPlay.Shell_EventPath);
@@ -91,11 +107,98 @@ event OnRemoved(UIScreen Screen){					//If this screen had modified our music, p
 	}
 }
 
-//----------------------------------------------------------------------------------------------------------------------------SortDefs
-function int SortDefs(MusicDefinition A, MusicDefinition B){
+
+//-------------------------------------------------------------------------------------------------------CompileFullShellMusicDefinitionList
+//	Collects MMS definitions, converts them to Wwise Mms definitions and returns a list of
+//		all shell music definitions.
+//---------------------------------------------------------------------------------------------
+function array<WwiseMms_ShellMusicDefinition> CompileFullShellMusicDefinitionList(){
+
+	local array<WwiseMms_ShellMusicDefinition> newListOfDefs;
+	local WwiseMms_ShellMusicDefinition newDef;
+	local WwiseMms_ShellMusicDefinition iDef;
+	local string cue;
+	local MusicDefinition Def;
+	local MusicDefinition EmptyDef;
+
+	//	 This is the original MMS system for giving shell music definitions names.
+	if (!bTransferred){ 
+		globalCounter = 0;
+		bTransferred = true;
+		
+		//	These are the entries from music packs designed for MMS.
+		foreach ShellCues(cue){
+			Def = EmptyDef;
+			Def.MusicID = name("Shell_Autogenerated_" $ cue $ "_" $ globalCounter++);
+			Def.CuePath = cue;
+			MusicDefs.AddItem(Def);
+		}
+		
+		//	These are the entries for the "fallback tracks", copies of the base game music which
+		//		are included with MMS.
+		foreach FallbackCues(cue){
+			Def = EmptyDef;
+			Def.MusicID = name("Shell_Autogenerated_" $ cue $ "_" $ globalCounter++);
+			Def.CuePath = cue;
+			MusicDefs.AddItem(Def);
+			
+			//	Double-checks that the list of fallback trackj
+			if(FallbackIDs.Find(Def.MusicID) == INDEX_NONE){
+				FallbackIDs.AddItem(Def.MusicID);
+			}
+		}
+	}
+
+	//	This system gives a name to any Wwise Mms definition which does not already have one.
+	foreach WiserShellCues(iDef){
+		//Autoname Wiser Shell Cues
+		if(iDef.MusicID == name("")){
+			iDef.MusicID = name("Shell_Autogenerated_" $ globalCounter++);
+		}
+	}
+	
+	//	Start with the existing list of Wwise Mms Shell Cues
+	newListOfDefs = WiserShellCues;
+	
+	//	Convert all of the MMS definitions which we just named and extracted to Wwise Mms definitions.
+	//	Add them to the final list.
+	if(MusicDefs.Length > 0){ 
+		foreach MusicDefs(Def){
+			newDef = ConvertStandardDefinitionToWwiseMmsShellMusicDefinition(Def);
+			newListOfDefs.AddItem(newDef);
+		}
+	}
+	
+	//	Log the definitions for debug purposes.
+																																`log("----------Printing Shell Definition List----------");
+	foreach newListOfDefs(iDef){
+																																`log(iDef.MusicID);
+	}
+																																`log("----------Finished Shell Definition List----------");
+																																
+	return newListOfDefs;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------WwiseMms_Shuffle
+//-------------------------------------------------------------------------------------------------------ConvertStandardDefinitionToWwiseMmsShellMusicDefinition
+//	Returns a Wwise Mms definition with variables taken from an MMS definition.
+//---------------------------------------------------------------------------------------------
+function WwiseMms_ShellMusicDefinition ConvertStandardDefinitionToWwiseMmsShellMusicDefinition(MusicDefinition oldDef){
+
+	local WwiseMms_ShellMusicDefinition newDef;
+
+	newDef.MusicID = Name("WwiseMms_ConvertedShellDefinition" $ GlobalCounter++);
+	newDef.StartCuePath = oldDef.CuePath;
+
+	if (FallbackIDs.Find(oldDef.MusicID) != INDEX_NONE	 &&		FallbackIDs.Find(newDef.MusicID) == INDEX_NONE){
+		FallbackIDs.AddItem(newDef.MusicID);
+	}
+
+	return(NewDef);
+}
+
+//-------------------------------------------------------------------------------------------------------WwiseMms_Shuffle
+//	Returns a shuffled copy of an array of WwiseMms_ShellMusicDefinitions.
+//---------------------------------------------------------------------------------------------
 function array<WwiseMms_ShellMusicDefinition> WwiseMms_Shuffle(array<WwiseMms_ShellMusicDefinition> listOfDefs){
 
 	local int m, i;
@@ -114,7 +217,10 @@ function array<WwiseMms_ShellMusicDefinition> WwiseMms_Shuffle(array<WwiseMms_Sh
 	return listOfDefs;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------WwiseMms_SortDefs
+//-------------------------------------------------------------------------------------------------------WwiseMms_SortDefs
+//	Returns a copy of an array of WwiseMms_ShellMusicDefinitions with entries for base game music
+//		shifted to the bottom.
+//---------------------------------------------------------------------------------------------
 function int WwiseMms_SortDefs(WwiseMms_ShellMusicDefinition A, WwiseMms_ShellMusicDefinition B){
 
 	local bool AIsFallback, BIsFallback;
@@ -129,78 +235,10 @@ function int WwiseMms_SortDefs(WwiseMms_ShellMusicDefinition A, WwiseMms_ShellMu
 	return 0;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------CompileFullShellMusicDefinitionList
-function array<WwiseMms_ShellMusicDefinition> CompileFullShellMusicDefinitionList(){
-
-	local array<WwiseMms_ShellMusicDefinition> newListOfDefs;
-	local WwiseMms_ShellMusicDefinition newDef;
-	local WwiseMms_ShellMusicDefinition iDef;
-	local string cue;
-	local MusicDefinition Def;
-	local MusicDefinition EmptyDef;
-
-	if (!bTransferred){ // This is the original system for obtaining cue names
-		globalCounter = 0;
-		bTransferred = true;
-
-		foreach ShellCues(cue){
-			Def = EmptyDef;
-			Def.MusicID = name("Shell_Autogenerated_" $ cue $ "_" $ globalCounter++);
-			Def.CuePath = cue;
-			MusicDefs.AddItem(Def);
-		}
-
-		foreach FallbackCues(cue){
-			Def = EmptyDef;
-			Def.MusicID = name("Shell_Autogenerated_" $ cue $ "_" $ globalCounter++);
-			Def.CuePath = cue;
-			MusicDefs.AddItem(Def);
-
-			if(FallbackIDs.Find(Def.MusicID) == INDEX_NONE){ //Why not make sure? Not important, may as well.
-				FallbackIDs.AddItem(Def.MusicID);
-			}
-		}
-	}
-
-
-	foreach WiserShellCues(iDef){	//Autoname Wiser Shell Cues
-		if(iDef.MusicID == name("")){
-			iDef.MusicID = name("Shell_Autogenerated_" $ globalCounter++);
-		}
-	}
-
-	newListOfDefs = WiserShellCues; //Start with the existing list of Wwise Mms Shell Cues
-
-	if(MusicDefs.Length > 0){ //Add all of the ones that the vanilla system just extracted
-		foreach MusicDefs(Def){
-			newDef = ConvertStandardDefinitionToWwiseMmsShellMusicDefinition(Def);
-			newListOfDefs.AddItem(newDef);
-		}
-	}
-
-																									`log("----------Printing Shell Definition List----------");
-																									foreach newListOfDefs(iDef){`log(iDef.MusicID);}
-																									`log("----------Finished Shell Definition List----------");
-	return newListOfDefs;
-}
-
-
-//----------------------------------------------------------------------------------------------------------------------------ConvertStandardDefinitionToWwiseMmsShellMusicDefinition
-function WwiseMms_ShellMusicDefinition ConvertStandardDefinitionToWwiseMmsShellMusicDefinition(MusicDefinition oldDef){
-
-	local WwiseMms_ShellMusicDefinition newDef;
-
-	newDef.MusicID = Name("WwiseMms_ConvertedShellDefinition" $ GlobalCounter++);
-	newDef.StartCuePath = oldDef.CuePath;
-
-	if (FallbackIDs.Find(oldDef.MusicID) != INDEX_NONE	 &&		FallbackIDs.Find(newDef.MusicID) == INDEX_NONE){
-		FallbackIDs.AddItem(newDef.MusicID);
-	}
-
-	return(NewDef);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------ConvertMMSSoundGroupToWwiseMmsSoundGroup
+//-------------------------------------------------------------------------------------------------------ConvertMMSSoundGroupToWwiseMmsSoundGroup
+//	Returns the Wwise Mms version of a sound group enum used by MMS to identify what part of the
+//		game a music definition is for.
+//---------------------------------------------------------------------------------------------
 function WwiseMms_EStrategySoundGroup ConvertMMSSoundGroupToWwiseMmsSoundGroup(EStrategySoundGroup oldGroup){
 
 	if(oldGroup == eSSG_Chapter01){return weSSG_Chapter01;}
@@ -217,22 +255,28 @@ function WwiseMms_EStrategySoundGroup ConvertMMSSoundGroupToWwiseMmsSoundGroup(E
 	return weSSG_AfterActionLoss;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------ObtainEventPlayer
+//-------------------------------------------------------------------------------------------------------ObtainEventPlayer
+//	Finds and returns the object responsible for playing AkEvents, creating it if it does not exist.
+//---------------------------------------------------------------------------------------------
 function Wwise_Mms_AkEventPlayer ObtainEventPlayer(){
 
 	local XComShell ShellMenu;
 	local WorldInfo WI;
 	local Wwise_Mms_AkEventPlayer playerSeek;
 
+	//	Looks for a pre-existing player and returns it if it exists.
 	playerSeek = Wwise_Mms_AkEventPlayer(class 'Object'.static.FindObject(eventPlayerPath, class 'Wwise_Mms_AkEventPlayer'));
 
-	if (playerSeek != None){return playerSeek;}
+	if (playerSeek != None){
+		return playerSeek;
+	}
 
 	WI = class'Helpers'.static.GetWorldInfo();
 	ShellMenu = XComShell(WI.Game); 
 
-	playerSeek = ShellMenu.Spawn(class'Wwise_Mms_AkEventPlayer', ShellMenu);							`log("Wwise Mms finds no event player! Creating...");
+	playerSeek = ShellMenu.Spawn(class'Wwise_Mms_AkEventPlayer', ShellMenu);														`log("Wwise Mms finds no event player! Creating...");
 
+	//	Stores the path to new player so that it will be found next time.
 	eventPlayerPath = PathName(playerSeek);
 
 	return playerSeek;
@@ -240,4 +284,6 @@ function Wwise_Mms_AkEventPlayer ObtainEventPlayer(){
 
 
 //----------------------------------------------------------------------------------------------------------------------------MMS FUNCTION INTERCEPTIONS
-function Shuffle(){																		`log("MMS Shuffle intercepted.");}
+
+function int SortDefs(MusicDefinition A, MusicDefinition B){}																		`log("MMS SortDefs intercepted.");}
+function Shuffle(){																													`log("MMS Shuffle intercepted.");}
