@@ -1,8 +1,7 @@
 //---------------------------------------------------------------------------------------
-//  FILE:   X2DownloadableContentInfo_Wwise_Mms.uc                                    
-//           
-//	Overrides the MMS class functions and disables the MMS UIShell listeners.
-//  
+//  FILE:  		X2DownloadableContentInfo_Wwise_Mms.uc                                    
+//	CREATED:	Adrian Hall -- 2018
+//	PURPOSE:	Overrides the MMS class functions and disables the MMS UIShell listeners.
 //---------------------------------------------------------------------------------------
 
 class X2DownloadableContentInfo_Wwise_Mms extends X2DownloadableContentInfo;
