@@ -5,12 +5,13 @@
 //
 //	FILE:		Wwise_Mms_UISL_UIShell.uc
 //	MODIFIED:	Adrian Hall -- 2018
-//	PURPOSE:	Removes fade-in and allows use of music which changes dynamically by menu
+//	PURPOSE:	General implenting class for Wwise Mms on Main Menu.
+//				Removes fade-in from MMS cues.
+//				Allows adding of dynamic music changes base on menu.
 //---------------------------------------------------------------------------------------
 
-//	Private variables which replace variables from MMS are indicated by a "w" prefix.
+//	Private variables which serve the same purpose as those in MMS are indicated by a "w" prefix.
 //	Functions which replace functions from MMS are indicated by a "WwiseMms_" Prefix.
-
 //	The list of Wwise Mms music definitions is called WiserMusicDefs to distinguish them from MMS definitions in configs.
 
 class Wwise_Mms_UISL_UIShell extends MMS_UISL_UIShell config(ShellSound) config(WiseSound) dependson(Wwise_Mms_XComStrategySoundManager) dependson(Wwise_Mms_XComTacticalSoundManager) dependson(Wwise_Mms_AkEventPlayer);

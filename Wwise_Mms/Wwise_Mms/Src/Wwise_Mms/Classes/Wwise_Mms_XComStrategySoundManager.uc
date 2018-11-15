@@ -1,16 +1,18 @@
 //---------------------------------------------------------------------------------------
-//  FILE:		MMS_XComStrategySoundManager.uc
-//  AUTHOR:		E3245, robojumper --  2016
-//  PURPOSE:	Completely replaces the wwise implementation in the strategy layer
+//  ORIGINAL:   MMS_Strategy_TrackPlayer.uc
+//  AUTHOR:		robojumper --  2016
+//  PURPOSE:	Handles a music track with fade-in / fade-out using an AudioComponent
 //
-//	FILE:		Wwise_Mms_XComStrategySoundManager.uc
-//	MODIFIED:	Adrian Hall -- 2018
-//	PURPOSE:	Allows interactive music using AkEvents to be mixed in with standard MMS packs for Strategy
+//	FILE:		Wwise_Mms_Strategy_TrackPlayer.uc
+//	MODIFIED:	nintendoeats -- 2018
+//	PURPOSE:	General Wwise Mms functionality class for strategy mode.
+//				Manages collection, selection and activation of strategy music definitions
+//					written for both MMS and Wwise Mms.
 //---------------------------------------------------------------------------------------
 
-//Alternate private variables are indicated by a "w" prefix.
-//Alternate functions and classes are indicated by a "WwiseMms_" Prefix
-//The list of Wwise Mms music definitions is called WiserStrategyMusicDefs to make the difference more obvious in configs
+//	Private variables which serve the same purpose as those in MMS are indicated by a "w" prefix.
+//	Functions which replace functions from MMS are indicated by a "WwiseMms_" Prefix.
+//	The list of Wwise Mms music definitions is called WiserStrategyMusicDefs to distinguish them from MMS definitions in configs.
 
 class Wwise_Mms_XComStrategySoundManager extends MMS_XComStrategySoundManager dependson(Wwise_Mms_TransitionData) config(StrategySound) config(WiseSound);
 																		
