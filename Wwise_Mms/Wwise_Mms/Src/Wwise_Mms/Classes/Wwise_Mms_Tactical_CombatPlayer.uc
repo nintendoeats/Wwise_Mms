@@ -5,11 +5,14 @@
 //
 //	FILE:		Wwise_Mms_Tactical_CombatPlayer.uc
 //	MODIFIED:	Adrian Hall -- 2018
-//	PURPOSE:	Overrides original and provides additional mode and hooks for interactive music
+//	PURPOSE:	Replicates original behaviour using WwiseMms_ sound definition classes
+//					and standardized code formatting.
+//				Code logic is largely retained from MMS.
+//				Like MMS, provides the option to change music between XCOM and Advent turns.	
 //---------------------------------------------------------------------------------------
 
-//Alternate private variables are indicated by a "w" prefix.
-//Alternate functions and classes are indicated by a "WwiseMms_" Prefix
+//	Private variables which serve the same purpose as those in MMS are indicated by a "w" prefix.
+//	Functions which replace functions from MMS are indicated by a "WwiseMms_" Prefix.
 
 class Wwise_Mms_Tactical_CombatPlayer extends MMS_Tactical_TrackPlayer dependson(Wwise_Mms_XComTacticalSoundManager);
 
@@ -31,21 +34,25 @@ var private AudioComponent wAStingAC;
 
 
 
+//-------------------------------------------------------------------------------------------------------State - Waiting
+//	This player does not have an active cue.
+//---------------------------------------------------------------------------------------------
+auto state Waiting{
+}
 
+//-------------------------------------------------------------------------------------------------------State - Finished
+//	This player has faded out of a cue.
+//---------------------------------------------------------------------------------------------
+state Finished{
+}
 
-
-
-//----------------------------------------------------------------------------------------------------------------------------State - Waiting
-auto state Waiting{}
-
-//----------------------------------------------------------------------------------------------------------------------------State - Finished
-state Finished{}
-
-//----------------------------------------------------------------------------------------------------------------------------State - Playing
+//-------------------------------------------------------------------------------------------------------State - Playing
+//	This player is starting or currently playing a cue.
+//---------------------------------------------------------------------------------------------
 simulated state Playing{
 
 	//----------------------------------------------------------------------------------------------------------------------------Playing - StopMusic
-	function StopMusic(optional bool bSkipSting){						`log("MMS Tactical Stop Music command intercepted.");}
+	function StopMusic(optional bool bSkipSting){																`log("MMS Tactical Stop Music command intercepted.");}
 
 	//----------------------------------------------------------------------------------------------------------------------------Playing - WwiseMms_StopMusic
 	function WwiseMms_StopMusic(optional bool bSkipSting){

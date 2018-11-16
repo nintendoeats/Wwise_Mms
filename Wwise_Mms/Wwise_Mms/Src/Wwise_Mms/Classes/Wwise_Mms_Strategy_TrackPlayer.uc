@@ -4,7 +4,7 @@
 //  PURPOSE:	Handles a music track with fade-in / fade-out using an AudioComponent
 //
 //	FILE:		Wwise_Mms_Strategy_TrackPlayer.uc
-//	MODIFIED:	nintendoeats -- 2018
+//	MODIFIED:	Adrian Hall -- 2018
 //	PURPOSE:	Replicates original behaviour using WwiseMms_ sound definition classes
 //					and standardized code formatting.
 //				Code logic is largely retained from MMS.

@@ -5,7 +5,7 @@
 //				Sets RTPCs and passes initiates events from the active music definition in
 //					Wwise_Mms_XComStrategySoundManager to the current AkEventPlayer.
 //				Extends Wwise_Mms_StrategyInformationFinder in an attempt to replicate
-//					partial class functionality in Unrealscript.
+//					partial class functionality within Unrealscript.
 //---------------------------------------------------------------------------------------
 class Wwise_Mms_StrategyBuddy extends Wwise_Mms_StrategyInformationFinder;
 

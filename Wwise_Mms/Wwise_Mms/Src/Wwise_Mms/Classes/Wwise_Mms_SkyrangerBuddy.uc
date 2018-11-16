@@ -1,7 +1,8 @@
 //---------------------------------------------------------------------------------------
 //  FILE:	    Wwise_Mms_SkyrangerBuddy.uc
 //  AUTHOR:		Adrian Hall -- 2018
-//  PURPOSE:	Listens for the launch button while on the way to a mission and optionally plays an event.
+//  PURPOSE:	Listens for the launch button while on the way to a mission,
+//					then optionally plays an event.
 //---------------------------------------------------------------------------------------
 
 class Wwise_Mms_SkyrangerBuddy extends Actor;
