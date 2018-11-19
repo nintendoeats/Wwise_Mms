@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------
 //  ORIGINAL:   MMS_XComTacticalTrackPlayer.uc
 //  AUTHOR:		robojumper --  2016
-//  PURPOSE:	Handles a tactical music with a possible sting
+//  PURPOSE:	Handles tactical combat music with a possible sting
 //
 //	FILE:		Wwise_Mms_Tactical_CombatPlayer.uc
 //	MODIFIED:	Adrian Hall -- 2018
@@ -51,10 +51,21 @@ state Finished{
 //---------------------------------------------------------------------------------------------
 simulated state Playing{
 
-	//----------------------------------------------------------------------------------------------------------------------------Playing - StopMusic
-	function StopMusic(optional bool bSkipSting){																`log("MMS Tactical Stop Music command intercepted.");}
+	//-------------------------------------------------------------------------------------------------------Playing - StopMusic
+	//	Disabled legacy function from MMS.
+	//	Use WwiseMms_StopMusic instead.
+	//---------------------------------------------------------------------------------------------
+	function StopMusic(optional bool bSkipSting){
+	
+																												`log("MMS Tactical Stop Music command intercepted.");
+	}
 
-	//----------------------------------------------------------------------------------------------------------------------------Playing - WwiseMms_StopMusic
+	//-------------------------------------------------------------------------------------------------------Playing - WwiseMms_StopMusic
+	//	Stops this the currently playing track with a 2 second fadeout.
+	//	Plays a short "sting" if one is part of the definition.
+	//	Changes state to "Finished".
+	//	The version of this function within the state may not be needed, removal has not been validated.
+	//---------------------------------------------------------------------------------------------
 	function WwiseMms_StopMusic(optional bool bSkipSting){
 
 		wbPlaying = false;
@@ -63,11 +74,10 @@ simulated state Playing{
 
 		if (!bSkipSting){
 			if (wbXComTurn || !wbHasAlienSting){
-
 				wXStingAC.Play();
 
-				}else{
-
+			}else{
+			
 				wAStingAC.Play();
 			}
 		}	
@@ -75,26 +85,34 @@ simulated state Playing{
 		GotoState('Finished');
 	}
 
-	//----------------------------------------------------------------------------------------------------------------------------Playing - Begin
+	//-------------------------------------------------------------------------------------------------------Playing - Begin
+	//	Called when the "Playing" state is first set.
+	//	Waits until all content to be played is asynchronously loaded.
+	//	Once content is loaded this function initiates playback of a different track depending on 
+	//		whose turn it is.
+	//	The track for XCOM's turn will always play if no track is defined for Advent's turn
+	//---------------------------------------------------------------------------------------------
 	Begin:
 
 		while(!wbAllContentLoaded){
 			Sleep(0.1f);
 		}
-	
-		`log("Wwise Mms -" @ "Combat Player Started" @ wTacDef.MusicID);
-
-			if (wbXComTurn || !wbHasAlienLoop){
-		wXLoopAC.Play();
+																												`log("Wwise Mms -" @ "Combat Player Started" @ wTacDef.MusicID);
+		if (wbXComTurn || !wbHasAlienLoop){
+			wXLoopAC.Play();
 
 		}else{
 
 		wALoopAC.Play();
-	}
+		}
 }
 
-//----------------------------------------------------------------------------------------------------------------------------WwiseMms_InitCombatPlayer
-function WwiseMms_InitCombatPlayer(WwiseMms_TacticalMusicDefinition Def, bool xcom){
+//-------------------------------------------------------------------------------------------------------WwiseMms_InitCombatPlayer
+//	Initiates loading of the loops and stings for the passed definition.
+//	"xcom" should be true if it is currently XCOM's turn, false otherwise.
+//	Changes state to "Waiting".
+//---------------------------------------------------------------------------------------------
+function WwiseMms_InitCombatPlayer(WwiseMms_TacticalMusicDefinition musicDefinitionToLoad, bool xcom){
 
 	local XComContentManager Mgr;
 
@@ -114,33 +132,49 @@ function WwiseMms_InitCombatPlayer(WwiseMms_TacticalMusicDefinition Def, bool xc
 
 
 	// Now stream in music
-	if (Def.Com.ALoopCue != ""){
+	if (musicDefinitionToLoad.Com.ALoopCue != ""){
 		wbHasAlienLoop = true;
 		wiToLoad++;
 
-		Mgr.RequestGameArchetype(Def.Com.ALoopCue, self, ALoopCueLoaded, true);
+		Mgr.RequestGameArchetype(musicDefinitionToLoad.Com.ALoopCue, self, ALoopCueLoaded, true);
 	}
 
-	if (Def.Com.XSting != ""){
+	if (musicDefinitionToLoad.Com.XSting != ""){
 		wbHasXComSting = true;
 		wiToLoad++;
 
-		Mgr.RequestGameArchetype(Def.Com.XSting, self, XStingLoaded, true);
+		Mgr.RequestGameArchetype(musicDefinitionToLoad.Com.XSting, self, XStingLoaded, true);
 	}
 
-	if (Def.Com.ASting != ""){
+	if (musicDefinitionToLoad.Com.ASting != ""){
 		wbHasAlienSting = true;
 		wiToLoad++;
 
-		Mgr.RequestGameArchetype(Def.Com.ASting, self, AStingLoaded, true);
+		Mgr.RequestGameArchetype(musicDefinitionToLoad.Com.ASting, self, AStingLoaded, true);
 	}
 	
-	Mgr.RequestGameArchetype(Def.Com.XLoopCue, self, XLoopCueLoaded, true);
+	Mgr.RequestGameArchetype(musicDefinitionToLoad.Com.XLoopCue, self, XLoopCueLoaded, true);
 	GotoState('Waiting');
-	`log("Wwise Mms combat player initialized with" @Def.MusicID);
+																												`log("Wwise Mms combat player initialized with" @Def.MusicID);
 }
 
-//----------------------------------------------------------------------------------------------------------------------------WwiseMms_StopMusic
+//-------------------------------------------------------------------------------------------------------WwiseMms_Play
+//	Initiates playback of loaded music.
+//	Changes state to "Playing".
+//---------------------------------------------------------------------------------------------
+function WwiseMms_Play(){
+
+	wbPlaying = true;
+	
+	//	Actual playback logic is handled by the "Begin" function for the "Playing" state.
+	GotoState('Playing');
+}
+
+//-------------------------------------------------------------------------------------------------------WwiseMms_StopMusic
+//	Stops all playing tracks with a 2 second fadeout.
+//	Plays a short "sting" depending on whose turn it is (if one is part of the definition).
+//	Changes state to "Finished".
+//---------------------------------------------------------------------------------------------
 function WwiseMms_StopMusic(optional bool bSkipSting){
 
 	wbPlaying = false;
@@ -161,16 +195,55 @@ function WwiseMms_StopMusic(optional bool bSkipSting){
 	GotoState('Finished');
 }
 
-//----------------------------------------------------------------------------------------------------------------------------WwiseMms_Play
-function WwiseMms_Play(){
+//-------------------------------------------------------------------------------------------------------XLoopCueLoaded
+//	Casts the loaded archetype as a sound cue and sets it up as the loop for XCOM's turn.
+//	Finishes by calling MakeLoadProgress.
+//---------------------------------------------------------------------------------------------
+function XLoopCueLoaded(Object LoadedArchetype){
 
-	wbPlaying = true;
+	wXLoopAC.SoundCue = SoundCue(LoadedArchetype);
 
-	GotoState('Playing');
+	MakeLoadProgress();
 }
 
-// xcom is true if it's the xcom turn and false if it's the alien turn
-//----------------------------------------------------------------------------------------------------------------------------OnNotifyTurnChange
+//-------------------------------------------------------------------------------------------------------ALoopCueLoaded
+//	Casts the loaded archetype as a sound cue and sets it up as the loop for Advent's turn.
+//	Finishes by calling MakeLoadProgress.
+//---------------------------------------------------------------------------------------------
+function ALoopCueLoaded(Object LoadedArchetype){
+
+	wALoopAC.SoundCue = SoundCue(LoadedArchetype);
+
+	MakeLoadProgress();
+}
+
+//-------------------------------------------------------------------------------------------------------XStingLoaded
+//	Casts the loaded archetype as a sound cue and sets it up as the sting for XCOM's turn.
+//	Finishes by calling MakeLoadProgress.
+//---------------------------------------------------------------------------------------------
+function XStingLoaded(Object LoadedArchetype){
+
+	wXStingAC.SoundCue = SoundCue(LoadedArchetype);
+
+	MakeLoadProgress();
+}
+
+//-------------------------------------------------------------------------------------------------------AStingLoaded
+//	Casts the loaded archetype as a sound cue and sets it up as the sting for Advent's turn.
+//	Finishes by calling MakeLoadProgress.
+//---------------------------------------------------------------------------------------------
+function AStingLoaded(Object LoadedArchetype){
+
+	wAStingAC.SoundCue = SoundCue(LoadedArchetype);
+
+	MakeLoadProgress();
+}
+
+//-------------------------------------------------------------------------------------------------------OnNotifyTurnChange
+//	Notifies this object that the current turn has changed between XCOM and Advent.
+//	xcom should be true if it is XCOM's turn and false if it is Advent's turn.
+//	NOTE: Consider renaming this function to "NotifyOfTurnChange" or similar.
+//---------------------------------------------------------------------------------------------
 function OnNotifyTurnChange(bool xcom){
 
 	if (!IsPlaying()){
@@ -178,7 +251,7 @@ function OnNotifyTurnChange(bool xcom){
 		return;
 	}
 
-	// Transition from XCom to alien turn
+	// Transition from XCOM's turn music to Advent's.
 	if (wbXComTurn && !xcom){
 			if (wbHasAlienLoop){
 				wXLoopAC.FadeOut(0.5f, 0.0f);
@@ -187,7 +260,7 @@ function OnNotifyTurnChange(bool xcom){
 
 		}else if(!wbXComTurn && xcom){
 
-		// Transition from Alien to xcom
+			// Transition from Advent's turn music to XCOM's.
 			if (wbHasAlienLoop){
 				wALoopAC.FadeOut(0.5f, 0.0f);
 				wXLoopAC.FadeIn(0.5f, 1.0f);
@@ -197,15 +270,21 @@ function OnNotifyTurnChange(bool xcom){
 	wbXComTurn = xcom;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------IsPlaying
+//-------------------------------------------------------------------------------------------------------IsPlaying
+//	Returns whether or not this player is currently playing a cue.
+//---------------------------------------------------------------------------------------------
 function bool IsPlaying(){
 
+	//	Getter for private variable.
 	return wbPlaying;
 }
 
 
-
-//----------------------------------------------------------------------------------------------------------------------------MakeLoadProgress
+//-------------------------------------------------------------------------------------------------------MakeLoadProgress
+//	Should be called only when this object has loaded a cue that it requested.
+//	Increments wiLoaded to keep track of how many sound cues have been loaded.
+//	Sets wbAllContentLoaded to true when wiLoaded equals wiToLoad.
+//---------------------------------------------------------------------------------------------
 private function MakeLoadProgress(){
 
 	wiLoaded++;
@@ -215,37 +294,6 @@ private function MakeLoadProgress(){
 	}
 }
 
-//----------------------------------------------------------------------------------------------------------------------------XLoopCueLoaded
-function XLoopCueLoaded(Object LoadedArchetype){
-
-	wXLoopAC.SoundCue = SoundCue(LoadedArchetype);
-
-	MakeLoadProgress();
-}
-
-//----------------------------------------------------------------------------------------------------------------------------ALoopCueLoaded
-function ALoopCueLoaded(Object LoadedArchetype){
-
-	wALoopAC.SoundCue = SoundCue(LoadedArchetype);
-
-	MakeLoadProgress();
-}
-
-//----------------------------------------------------------------------------------------------------------------------------XStingLoaded
-function XStingLoaded(Object LoadedArchetype){
-
-	wXStingAC.SoundCue = SoundCue(LoadedArchetype);
-
-	MakeLoadProgress();
-}
-
-//----------------------------------------------------------------------------------------------------------------------------AStingLoaded
-function AStingLoaded(Object LoadedArchetype){
-
-	wAStingAC.SoundCue = SoundCue(LoadedArchetype);
-
-	MakeLoadProgress();
-}
 
 
 //----------------------------------------------------------------------------------------------------------------------------MMS FUNCTION INTERCEPTIONS
@@ -257,6 +305,8 @@ function StopMusic(optional bool bSkipSting){										`log("MMS StopMusic inter
 //----------------------------------------------------------------------------------------------------------------------------DefaultProperties
 defaultproperties
 {
+	//Creates and stores a set of audio components for music playback.
+	
 	Begin Object Class=AudioComponent Name=wMusic01Comp
     End Object
 	wXLoopAC=wMusic01Comp

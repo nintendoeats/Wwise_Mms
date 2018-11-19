@@ -49,10 +49,33 @@ state Finished{
 //---------------------------------------------------------------------------------------------
 simulated state Playing{
 
+	//-------------------------------------------------------------------------------------------------------Playing - StopMusic
+	//	Slight modification of base function within state.
+	//	Probably not needed, removal has not been validated.
+	//---------------------------------------------------------------------------------------------
+	function StopMusic(){
+
+		wbPlaying = false;
+	
+		//	Shell definitions never define a fadeout, so they are just stopped normally.
+		if(playShell){
+			wAC.Stop();
+			wIntroAC.Stop();
+
+		}else{
+
+			wAC.FadeOut(wDef.dontFadeOut ? 0.0f : wFadeDuration, 0.0f);
+			wIntroAC.FadeOut(wDef.dontFadeOut ? 0.0f : wFadeDuration, 0.0f);
+		}
+		
+		GotoState('Finished');
+	}
+
 	//-------------------------------------------------------------------------------------------------------Playing - Begin
-	//	Called when the playing state is first set.
+	//	Called when the "Playing" state is first set.
 	//	Waits until all content to be played is asynchronously loaded.
-	//	Plays the intro, waits for the duration of that intro and then starts the main loop.
+	//	Once content is loadeed this function plays the intro, waits for the duration of that intro 
+	//		and then starts the main loop.
 	//---------------------------------------------------------------------------------------------
 	Begin:
 
@@ -83,29 +106,7 @@ simulated state Playing{
 
 				wAC.FadeIn(wDef.dontFadeIn ? 0.0f : wFadeDuration, 1.0f);
 			}
-		}
-		
-	//-------------------------------------------------------------------------------------------------------Playing - StopMusic
-	//	Slight modification of base function within state.
-	//	Probably not needed, removal has not been validated.
-	//---------------------------------------------------------------------------------------------
-	function StopMusic(){
-
-		wbPlaying = false;
-	
-		//	Shell definitions never define a fadeout, so they are just stopped normally.
-		if(playShell){
-			wAC.Stop();
-			wIntroAC.Stop();
-
-		}else{
-
-			wAC.FadeOut(wDef.dontFadeOut ? 0.0f : wFadeDuration, 0.0f);
-			wIntroAC.FadeOut(wDef.dontFadeOut ? 0.0f : wFadeDuration, 0.0f);
-		}
-		
-		GotoState('Finished');
-	}
+		}	
 }
 
 
@@ -125,6 +126,7 @@ function preBeginPlay(){
 
 //-------------------------------------------------------------------------------------------------------WwiseMms_Shell_InitStrategyPlayer
 //	Sets this object up to play a music definition for the main menu when Play() is called.
+//	Changes state to "Waiting".
 //---------------------------------------------------------------------------------------------
 function WwiseMms_Shell_InitStrategyPlayer(WwiseMms_ShellMusicDefinition _Def){
 	local XComContentManager Mgr;
@@ -151,6 +153,7 @@ function WwiseMms_Shell_InitStrategyPlayer(WwiseMms_ShellMusicDefinition _Def){
 
 //-------------------------------------------------------------------------------------------------------WwiseMms_Normal_InitStrategyPlayer
 //	Sets this object up to play a standard strategy music definition when Play() is called.
+//	Changes state to "Waiting".
 //---------------------------------------------------------------------------------------------
 function WwiseMms_Normal_InitStrategyPlayer(WwiseMms_StrategyMusicDefinition _Def){
 
@@ -214,6 +217,7 @@ private function WwiseMms_MakeLoadProgress(){
 
 //-------------------------------------------------------------------------------------------------------Play
 //	Initiates playback of the loaded sound cue and intro.
+//	Changes state to "Playing".
 //---------------------------------------------------------------------------------------------
 function Play(){
 
@@ -223,6 +227,7 @@ function Play(){
 
 //-------------------------------------------------------------------------------------------------------StopMusic
 //	Stops all music on this object, using a fadeout if one is defined by the definition.
+//	Changes state to "Finished".
 //---------------------------------------------------------------------------------------------
 function StopMusic(){
 
