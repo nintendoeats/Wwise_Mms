@@ -21,9 +21,7 @@ _________________________________________ INTRODUCTION  ________________________
   
   MMS uses the sound cue system, and as such it only performs basic music behaviour, finding and playing a new track after certain events (i.e. transitioning from search mode to combat in the tactical section). Wwise Mms allows modders to alter the nature of music based on various in-game events and states, such as a soldier dying or the Avenger travelling across the map screen. This gives modders a huge amount of control while also providing the needed timing precision, down to the indivdual audio sample in some cases.
   
-*** Limitations ***
-
-  While the unrealscript side of Wwise Mms is compatible with XCOM 2's War of the Chosen (WOTC), there is a Wwise-side problem which has thusfar prevented new soundbanks from being played in the expansion. This effectively makes Wwise Mms incompatible with WOTC for the time being.
+*** Limitation ***
 
   Because of the way XCOM 2 loads in assets, it is nessecary to place either the sound bank files or hard links to them in one of the game's content folders. This means that simply subscribing to the mod in Steam Workshop is not enough. Supplying the user with a .bat file which creates links is a way to make this as painless as possible for them.
   
